@@ -1,0 +1,24 @@
+{
+  "module": [
+    [
+      "time",
+      {
+        "datestart": "2019-09-20 11:04:39",
+        "datestop": "2019-10-20 11:04:41"
+      }
+    ]
+  ],
+  "row_num": 1,
+  "table_name": "filter",
+  "source_ip": "110.110.110.110",
+  "dport": "80",
+  "sig": "8acec9a3e59c2dadb70fe420757c19c2",
+  "protocol": "tcp",
+  "operate": "I",
+  "destination_ip": "10.183.100.154",
+  "port": "22",
+  "host": "10.183.100.154",
+  "action": "ACCEPT",
+  "sport": "80",
+  "chain_name": "INPUT"
+}
