@@ -1,37 +1,48 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # cython: language_level=3
+
 from IPy import IP
-import os
 import threading
 import queue
+from subprocess import getoutput
+
+threads = []
+que = queue.Queue(200)
+queueLock = threading.Lock()
 
 
-def ping_ip(ip_address, ip_list):
-    command = 'ping %s -n 1' % ip_address
-    res = os.popen(command).readlines()
-    flag = False
-    for line in list(res):
-        if not line:
-            continue
-        else:
-            if str(line).upper().find("TTL") >= 0:
-                flag = True
-                break
-    if flag:
-        ip_list.append(str(ip_address))
+class ThreadsCheckIP(threading.Thread):
+    def __init__(self, q, ip_set):
+        threading.Thread.__init__(self)
+        self.q = q
+        self.ip_set = ip_set
+
+    def run(self):
+        ping_ip(self.q, self.ip_set)
+
+
+def ping_ip(q, ip_list):
+    queueLock.acquire()
+    if not que.empty():
+        ip_address = q.get()
+        queueLock.release()
+        cmd = 'ping -f -c 5 %s | sed -n \'s/received/received/p\'' % ip_address
+        res = getoutput(cmd)
+        res = res.replace(',', '').split(' ')
+        n = int(res[res.index('received') - 1])
+        if n > 0:
+            ip_list.append(str(ip_address))
         return ip_list
+    else:
+        queueLock.release()
 
 
 def return_ip(ip_in):
-    threads = []
     ip_set = []
-    que = queue.Queue()
-    worker_thread_num = 200
     for ip_addr in IP(ip_in):
         que.put(ip_addr)
-    for i in range(worker_thread_num):
-        t = threading.Thread(target=ping_ip, args=(que.get(), ip_set))
+        t = ThreadsCheckIP(que, ip_set)
         t.start()
         threads.append(t)
     for t in threads:
