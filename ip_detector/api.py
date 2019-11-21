@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # cython: language_level=3
 import json
-from OperTools.ip_detector import utils
+from ip_detector import utils
 from hashlib import md5
 from urllib import request
 import time
